@@ -14,19 +14,31 @@ class XMLTools:
 
         class_map = {}
         id = 1
-        if not osp.exists(osp.join(self.txtFilesRoot, "train")):
-            os.makedirs(osp.join(self.txtFilesRoot, "train"))
-        if not osp.exists(osp.join(self.txtFilesRoot, "test")):
-            os.makedirs(osp.join(self.txtFilesRoot, "test"))
+        train_txt_dir = osp.join(self.txtFilesRoot, "train_" + postName + ".txt")
+        test_txt_dir = osp.join(self.txtFilesRoot, "test_" + postName + ".txt")
+        train_img_dir = osp.join(self.txtFilesRoot, "train")
+        test_img_dir = osp.join(self.txtFilesRoot, "test")
 
-        out1, out2 = open(osp.join(self.txtFilesRoot, "train_" + postName + ".txt"), "w"), open(osp.join(self.txtFilesRoot, "train_" + postName + ".txt"), "w")
-        dst1, dst2 = osp.join(self.txtFilesRoot, "train"), osp.join(self.txtFilesRoot, "test")
+        #clean previous work
+        if osp.exists(train_txt_dir):
+            os.remove(train_txt_dir)
+        if osp.exists(test_txt_dir):
+            os.remove(test_txt_dir)
+        if osp.exists(osp.join(train_img_dir)):
+            shutil.rmtree(osp.join(train_img_dir))
+        if osp.exists(osp.join(test_img_dir)):
+            shutil.rmtree(osp.join(test_img_dir))
 
+        #create file & folder
+        out_train, out_test = open(train_txt_dir, "w"), open(test_txt_dir, "w")
+        os.makedirs(train_img_dir), os.makedirs(test_img_dir)
+
+        #transfer
         for roots, dirs, files in os.walk(self.xmlFilesRoot):
             for f in files:
                 if not f.endswith('.xml'):
                     continue
-                (out, dst) = (out2, dst2) if random.randint(0, 9) == 0 else (out1, dst1)
+                (out, dst) = (out_test, test_img_dir) if random.randint(0, 9) == 0 else (out_train, train_img_dir)
                 filename = osp.splitext(f)[0] + ".jpg"
                 shutil.copyfile(osp.join(roots, filename), osp.join(dst, filename))
 
@@ -54,8 +66,8 @@ class XMLTools:
                     ymax = bbox.getElementsByTagName("ymax")[0].childNodes[0].nodeValue
                     ostr = xmin + " " + ymin + " " + xmax + " " + ymax + " " + str(class_id) + "\n"
                     out.write(ostr)
-        out1.close()
-        out2.close()
+        out_train.close()
+        out_test.close()
 
 m_tools = XMLTools(r'D:\work\Code\feather\data\xml\tianchi', r'D:\work\Code\feather\data\txt\tianchi')
 m_tools.xmlToTxt("tianchi")
